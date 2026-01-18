@@ -28,8 +28,8 @@ func main() {
 		fmt.Printf("Error writing file '%s' : %v\n", outputFile, err)
 		os.Exit(1)
 	}
-	
-	fmt.Printf()
+
+	fmt.Printf("File processed susccessfully!")
 }
 
 func readFile(filename string) (string, error) {
