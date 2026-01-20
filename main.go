@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
-	// Quick validation where os.Args[0] = "." (if you compile with go run .)or "./myprogram" (if you compile it with go build -o myprogram), os.Args[1] = "input.txt", os.Args[2] = "output.txt" due to those != 3
 	if len(os.Args) != 3 {
 		fmt.Println("Use: go run . <input_file> <output_file>")
 		os.Exit(1)
@@ -29,7 +29,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("File processed susccessfully!")
+	fmt.Printf("File processed successfully!")
 }
 
 func readFile(filename string) (string, error) {
@@ -45,5 +45,51 @@ func writeFile(filename string, content string) error {
 }
 
 func processText(input string) string {
-	return input
+	tokens := strings.Fields(input)
+	processed := processTokens(tokens)
+	result := strings.Join(processed, " ")
+	return result
+}
+
+func processTokens(tokens []string) []string {
+	result := []string{}
+	
+	for i := 0; i < len(tokens); i++ {
+		token := tokens[i]
+		
+		if token == "(up)" {
+			if len(result) > 0 {
+				lastIndex := len(result) - 1
+				result[lastIndex] = strings.ToUpper(result[lastIndex])
+			}
+			continue
+		}
+		
+		if token == "(low)" {
+			if len(result) > 0 {
+				lastIndex := len(result) - 1
+				result[lastIndex] = strings.ToLower(result[lastIndex])
+			}
+			continue
+		}
+		
+		if token == "(cap)" {
+			if len(result) > 0 {
+				lastIndex := len(result) - 1
+				result[lastIndex] = capitalize(result[lastIndex])
+			}
+			continue
+		}
+		
+		result = append(result, token)
+	}
+	
+	return result
+}
+
+func capitalize(word string) string {
+	if len(word) == 0 {
+		return word
+	}
+	return strings.ToUpper(string(word[0])) + strings.ToLower(word[1:])
 }
