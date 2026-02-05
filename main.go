@@ -48,7 +48,9 @@ func writeFile(filename string, content string) error {
 func processText(input string) string {
 	tokens := strings.Fields(input)
 	processed := processTokens(tokens)
-	result := strings.Join(processed, " ")
+	withPunctuation := fixPunctuation(processed)
+	withArticles := fixArticles(withPunctuation)
+	result := strings.Join(withArticles, " ")
 	return result
 }
 
@@ -176,4 +178,96 @@ func binToDec(bin string) string {
 		return bin
 	}
 	return strconv.Itoa(int(decimal))
+}
+
+func fixPunctuation(tokens []string) []string {
+	result := []string{}
+	inQuote := false
+	quoteStart := -1
+
+	for i := 0; i < len(tokens); i++ {
+		token := tokens[i]
+
+		if token == "'" {
+			if !inQuote {
+				inQuote = true
+				quoteStart = len(result)
+			} else {
+				inQuote = false
+				if quoteStart >= 0 && quoteStart < len(result) {
+					result[quoteStart] = "'" + result[quoteStart]
+				}
+				if len(result) > 0 {
+					result[len(result)-1] = result[len(result)-1] + "'"
+				}
+			}
+			continue
+		}
+
+		result = append(result, token)
+	}
+
+	finalResult := []string{}
+	for i := 0; i < len(result); i++ {
+		word := result[i]
+
+		cleanWord, prefix, suffix := extractPunctuation(word)
+
+		if cleanWord != "" {
+			finalResult = append(finalResult, prefix+cleanWord+suffix)
+		} else if suffix != "" {
+			if len(finalResult) > 0 {
+				finalResult[len(finalResult)-1] = finalResult[len(finalResult)-1] + suffix
+			} else {
+				finalResult = append(finalResult, suffix)
+			}
+		}
+	}
+
+	return finalResult
+}
+
+func extractPunctuation(word string) (string, string, string) {
+	prefix := ""
+	suffix := ""
+	clean := word
+
+	punctuation := ".,!?:;"
+
+	for len(clean) > 0 && strings.ContainsRune(punctuation, rune(clean[len(clean)-1])) {
+		suffix = string(clean[len(clean)-1]) + suffix
+		clean = clean[:len(clean)-1]
+	}
+
+	return clean, prefix, suffix
+}
+
+func isPunctuation(r rune) bool {
+	return r == '.' || r == ',' || r == '!' || r == '?' || r == ':' || r == ';'
+}
+
+func fixArticles(tokens []string) []string {
+	result := make([]string, len(tokens))
+	copy(result, tokens)
+
+	for i := 0; i < len(result)-1; i++ {
+		if strings.ToLower(result[i]) == "a" {
+			nextWord := result[i+1]
+			cleaned, _, _ := extractPunctuation(nextWord)
+
+			if len(cleaned) > 0 {
+				firstChar := strings.ToLower(string(cleaned[0]))
+				if firstChar == "a" || firstChar == "e" || firstChar == "i" ||
+					firstChar == "o" || firstChar == "u" || firstChar == "h" {
+					if result[i] == "a" {
+						result[i] = "an"
+					} else if result[i] == "A" {
+						result[i] = "An"
+					}
+				}
+			}
+		}
+	}
+
+	return result
 }
