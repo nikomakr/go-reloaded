@@ -81,8 +81,7 @@ echo "the empire state building (cap, 3)" > test7.txt
 go run . test7.txt output7.txt 2>/dev/null
 echo "Input:    'the empire state building (cap, 3)'"
 echo "Got:      '$(cat output7.txt)'"
-echo "Expected: 'Empire State Building'"
-echo ""
+echo "Expected: 'the Empire State Building'"
 
 # Test 8: (cap, 6)
 echo "Test 8: (cap, 6) from requirements"
